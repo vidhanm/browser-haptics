@@ -277,42 +277,61 @@
                 
                 // Define haptic events synchronized with F1 video
                 this.hapticEvents = [
-                { time: 1.0, pattern: [150, 80, 250, 80, 400], description: "Engine revs build for launch" },
-    { time: 2.5, pattern: [80, 100, 80], description: "1st to 2nd gear shift" },
-    { time: 4.0, pattern: [70], description: "2nd to 3rd gear shift" },
-    { time: 5.5, pattern: [70], description: "3rd to 4th gear shift" },
-    { time: 8.0, pattern: [300, 50, 100], description: "Entering and holding a long sweeping corner" },
-    { time: 11.5, pattern: [60], description: "Upshift while exiting the corner" },
+                { time: 0.5, pattern: [80, 80, 100, 70, 150, 60, 300], description: "Launch and hard acceleration down the main straight" },
+    { time: 2.2, pattern: [60], description: "Upshift" },
+    { time: 3.4, pattern: [60], description: "Upshift" },
+    { time: 4.6, pattern: [60], description: "Upshift" },
+    { time: 6.0, pattern: [60], description: "Upshift" },
+    { time: 7.8, pattern: [60], description: "Upshift into top gear" },
+
+    // Variante del Rettifilo (First Chicane)
+    { time: 15.5, pattern: [180, 80, 150, 80, 120, 80, 100], description: "Heavy braking for Turn 1" },
+    { time: 17.8, pattern: [80, 40, 80, 40, 80], description: "Riding the kerb on Turn 1 entry" },
+    { time: 19.0, pattern: [80, 40, 80], description: "Riding the kerb on Turn 2 exit" },
+    { time: 20.0, pattern: [80, 80, 120], description: "Short burst of acceleration" },
     
-    // Mid-Lap Section 1
-    { time: 15.5, pattern: [150, 120, 150], description: "Hard braking and multiple downshifts for a sharp turn" },
-    { time: 18.0, pattern: [80, 60, 120, 50, 200], description: "Aggressive acceleration out of the turn" },
-    { time: 19.8, pattern: [60], description: "Quick upshift on a short straight" },
-    { time: 21.5, pattern: [60], description: "Another quick upshift" },
-    { time: 23.0, pattern: [40, 50, 40, 50, 40], description: "Engine at high RPM redline on the straight" },
-    { time: 26.0, pattern: [120, 100, 80], description: "Lighter braking and downshift for a chicane" },
-    { time: 28.5, pattern: [180], description: "Feeling the chassis load up on corner exit" },
+    // Curva Grande
+    { time: 21.0, pattern: [70], description: "Upshift" },
+    { time: 22.5, pattern: [70], description: "Upshift" },
+    { time: 24.0, pattern: [500], description: "Sustained G-force through Curva Grande" },
+    { time: 27.5, pattern: [60], description: "Upshift" },
+    
+    // Variante della Roggia (Second Chicane)
+    { time: 34.2, pattern: [160, 70, 130, 70, 100], description: "Hard braking for the second chicane" },
+    { time: 36.5, pattern: [90, 50, 90], description: "Hitting the entry kerb at Turn 4" },
+    { time: 37.8, pattern: [90, 50, 90], description: "Hitting the exit kerb at Turn 5" },
+    
+    // Lesmo Corners
+    { time: 39.0, pattern: [70, 70, 150], description: "Acceleration towards Lesmo 1" },
+    { time: 41.5, pattern: [100], description: "Light brake and downshift for Lesmo 1 (Turn 6)" },
+    { time: 43.0, pattern: [250], description: "Feeling the car through Lesmo 1" },
+    { time: 45.0, pattern: [80, 60, 150], description: "Short acceleration burst" },
+    { time: 46.5, pattern: [120, 80, 80], description: "Braking for Lesmo 2 (Turn 7)" },
+    { time: 48.0, pattern: [300], description: "Sustained G-force on Lesmo 2 exit" },
 
-    // Mid-Lap Section 2
-    { time: 35.0, pattern: [150, 120, 150, 120, 150], description: "Very hard braking for a hairpin" },
-    { time: 38.0, pattern: [100, 80, 120, 80, 150, 50, 250], description: "Building power out of the slow hairpin" },
-    { time: 42.0, pattern: [70], description: "Upshift" },
-    { time: 44.0, pattern: [70], description: "Upshift" },
-    { time: 46.0, pattern: [450], description: "Sustained G-force through a fast, sweeping corner" },
-    { time: 50.0, pattern: [50, 80, 50], description: "Short-shifting to maintain stability" },
+    // Back Straight to Ascari
+    { time: 51.0, pattern: [60], description: "Upshift" },
+    { time: 53.0, pattern: [60], description: "Upshift" },
+    { time: 54.5, pattern: [40, 50, 40, 50, 40], description: "High RPM on back straight" },
+    { time: 57.0, pattern: [60], description: "Upshift" },
+    { time: 100.5, pattern: [200, 80, 150, 80, 120, 80, 100, 80, 80], description: "Very heavy braking for Ascari chicane" },
 
-    // Approaching the Finish
-    { time: 54.0, pattern: [60, 60, 60, 60, 400], description: "Sustained full throttle acceleration on the main straight" },
-    { time: 58.0, pattern: [60], description: "Final upshift into top gear" },
-    { time: 62.0, pattern: [1200], description: "Peak speed, maximum vibration and engine scream" },
-    { time: 110.0, pattern: [150, 100, 120], description: "Braking hard after the main straight" },
-    { time: 114.0, pattern: [250], description: "Navigating the final turn" },
-    { time: 118.0, pattern: [80, 80, 150, 50, 300], description: "Final acceleration push" },
-
-    // Cool Down
-    { time: 124.0, pattern: [400, 300, 200, 500, 100], description: "Crossing the line, coasting and engine slowing" },
-    { time: 128.0, pattern: [80, 400, 80], description: "Final downshift as the car comes to a stop" }
-
+    // Variante Ascari
+    { time: 103.0, pattern: [90, 60, 90], description: "Kerb strike on Ascari entry (Turn 8)" },
+    { time: 104.5, pattern: [200], description: "Mid-corner load at Turn 9" },
+    { time: 106.0, pattern: [90, 60, 90], description: "Kerb strike on Ascari exit (Turn 10)" },
+    
+    // Parabolica
+    { time: 107.5, pattern: [80, 60, 120, 50, 200], description: "Full acceleration towards Parabolica" },
+    { time: 110.0, pattern: [70], description: "Upshift" },
+    { time: 112.5, pattern: [70], description: "Upshift" },
+    { time: 116.0, pattern: [150, 100, 100], description: "Braking and turning in for Parabolica (Turn 11)" },
+    { time: 118.5, pattern: [600], description: "Long, sustained G-force through Parabolica" },
+    
+    // Finish
+    { time: 124.5, pattern: [80, 60, 100, 50, 150, 40, 250], description: "Final acceleration burst over the line" },
+    { time: 126.8, pattern: [60], description: "Final upshift" },
+    { time: 128.0, pattern: [400, 300, 200], description: "Engine and car slowing down after finish" }    
 ];
 
                 this.init();
