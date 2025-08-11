@@ -281,47 +281,431 @@
                     cornering: [40, 80] // A slightly rougher feel for G-force in corners
                 };
 
-                this.hapticEvents = [
-                    { time: 0.5, pattern: [80, 80, 100, 70, 150, 60, 300], description: "Launch and hard acceleration" },
-                    { time: 2.2, pattern: [60], description: "Upshift" },
-                    { time: 3.4, pattern: [60], description: "Upshift" },
-                    { time: 4.6, pattern: [60], description: "Upshift" },
-                    { time: 6.0, pattern: [60], description: "Upshift" },
-                    { time: 7.8, pattern: [60], description: "Upshift into top gear" },
-                    { time: 15.5, pattern: [180, 80, 150, 80, 120, 80, 100], description: "Heavy braking for Turn 1" },
-                    { time: 17.8, pattern: [80, 40, 80, 40, 80], description: "Riding the kerb on Turn 1 entry" },
-                    { time: 19.0, pattern: [80, 40, 80], description: "Riding the kerb on Turn 2 exit" },
-                    { time: 20.0, pattern: [80, 80, 120], description: "Short burst of acceleration" },
-                    { time: 21.0, pattern: [70], description: "Upshift" },
-                    { time: 22.5, pattern: [70], description: "Upshift" },
-                    { time: 24.0, pattern: [500], description: "Sustained G-force through Curva Grande" },
-                    { time: 27.5, pattern: [60], description: "Upshift" },
-                    { time: 34.2, pattern: [160, 70, 130, 70, 100], description: "Hard braking for second chicane" },
-                    { time: 36.5, pattern: [90, 50, 90], description: "Hitting the entry kerb at Turn 4" },
-                    { time: 37.8, pattern: [90, 50, 90], description: "Hitting the exit kerb at Turn 5" },
-                    { time: 39.0, pattern: [70, 70, 150], description: "Acceleration towards Lesmo 1" },
-                    { time: 41.5, pattern: [100], description: "Light brake and downshift for Lesmo 1" },
-                    { time: 43.0, pattern: [250], description: "Feeling the car through Lesmo 1" },
-                    { time: 45.0, pattern: [80, 60, 150], description: "Short acceleration burst" },
-                    { time: 46.5, pattern: [120, 80, 80], description: "Braking for Lesmo 2" },
-                    { time: 48.0, pattern: [300], description: "Sustained G-force on Lesmo 2 exit" },
-                    { time: 51.0, pattern: [60], description: "Upshift" },
-                    { time: 53.0, pattern: [60], description: "Upshift" },
-                    { time: 54.5, pattern: [40, 50, 40, 50, 40], description: "High RPM on back straight" },
-                    { time: 57.0, pattern: [60], description: "Upshift" },
-                    { time: 100.5, pattern: [200, 80, 150, 80, 120, 80, 100, 80, 80], description: "Heavy braking for Ascari chicane" },
-                    { time: 103.0, pattern: [90, 60, 90], description: "Kerb strike on Ascari entry" },
-                    { time: 104.5, pattern: [200], description: "Mid-corner load at Ascari" },
-                    { time: 106.0, pattern: [90, 60, 90], description: "Kerb strike on Ascari exit" },
-                    { time: 107.5, pattern: [80, 60, 120, 50, 200], description: "Full acceleration towards Parabolica" },
-                    { time: 110.0, pattern: [70], description: "Upshift" },
-                    { time: 112.5, pattern: [70], description: "Upshift" },
-                    { time: 116.0, pattern: [150, 100, 100], description: "Braking and turning in for Parabolica" },
-                    { time: 118.5, pattern: [600], description: "Long, sustained G-force through Parabolica" },
-                    { time: 124.5, pattern: [80, 60, 100, 50, 150, 40, 250], description: "Final acceleration over the line" },
-                    { time: 126.8, pattern: [60], description: "Final upshift" },
-                    { time: 128.0, pattern: [400, 300, 200], description: "Engine and car slowing down" }
-                ];
+                this.hapticEvents = 
+                [
+    {
+        "time": 0.0,
+        "pattern": [
+            117
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 0.25,
+        "pattern": [
+            78
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 0.5,
+        "pattern": [
+            130
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 0.75,
+        "pattern": [
+            166
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 1.0,
+        "pattern": [
+            199
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 1.25,
+        "pattern": [
+            205
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 1.5,
+        "pattern": [
+            201
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 1.75,
+        "pattern": [
+            191
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 2.0,
+        "pattern": [
+            155
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 2.25,
+        "pattern": [
+            173
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 2.5,
+        "pattern": [
+            167
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 2.75,
+        "pattern": [
+            191
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 3.0,
+        "pattern": [
+            193
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 3.25,
+        "pattern": [
+            189
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 3.5,
+        "pattern": [
+            184
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 3.75,
+        "pattern": [
+            184
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 4.0,
+        "pattern": [
+            188
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 4.25,
+        "pattern": [
+            199
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 4.5,
+        "pattern": [
+            204
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 4.75,
+        "pattern": [
+            206
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 5.0,
+        "pattern": [
+            211
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 5.25,
+        "pattern": [
+            209
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 5.5,
+        "pattern": [
+            203
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 5.75,
+        "pattern": [
+            203
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 6.0,
+        "pattern": [
+            200
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 6.25,
+        "pattern": [
+            199
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 6.5,
+        "pattern": [
+            199
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 6.75,
+        "pattern": [
+            183
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 7.0,
+        "pattern": [
+            201
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 7.25,
+        "pattern": [
+            191
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 7.5,
+        "pattern": [
+            186
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 7.75,
+        "pattern": [
+            187
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 8.0,
+        "pattern": [
+            196
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 8.25,
+        "pattern": [
+            178
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 8.5,
+        "pattern": [
+            178
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 8.75,
+        "pattern": [
+            170
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 9.0,
+        "pattern": [
+            176
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 9.25,
+        "pattern": [
+            168
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 9.5,
+        "pattern": [
+            173
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 9.75,
+        "pattern": [
+            170
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 10.0,
+        "pattern": [
+            168
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 10.25,
+        "pattern": [
+            160
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 10.5,
+        "pattern": [
+            155
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 10.75,
+        "pattern": [
+            183
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 11.0,
+        "pattern": [
+            179
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 11.25,
+        "pattern": [
+            172
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 11.5,
+        "pattern": [
+            172
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 11.75,
+        "pattern": [
+            170
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 12.0,
+        "pattern": [
+            176
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 12.25,
+        "pattern": [
+            185
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 12.5,
+        "pattern": [
+            185
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 12.75,
+        "pattern": [
+            189
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 13.0,
+        "pattern": [
+            191
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 13.25,
+        "pattern": [
+            189
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 13.5,
+        "pattern": [
+            191
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 13.75,
+        "pattern": [
+            190
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 14.0,
+        "pattern": [
+            205
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 14.25,
+        "pattern": [
+            185
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 14.5,
+        "pattern": [
+            172
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+    {
+        "time": 14.75,
+        "pattern": [
+            178
+        ],
+        "description": "Base vibration (RPM+energy)"
+    },
+        
+       
+            ];
                 
                 this.init();
             }
