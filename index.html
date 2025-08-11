@@ -121,6 +121,8 @@
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 20px;
+            max-height: 150px;
+            overflow-y: auto;
         }
 
         .haptic-timeline h3 {
@@ -155,9 +157,12 @@
             border-radius: 3px;
             background: rgba(255, 255, 255, 0.2);
             outline: none;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
             appearance: none;
             width: 20px;
             height: 20px;
@@ -216,7 +221,6 @@
         <div class="video-container">
             <video id="hapticVideo" controls preload="metadata">
                 <source src="./f1-video.mp4" type="video/mp4">
-                <!-- Fallback to a sample video if F1 video not available -->
                 <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
                 <p>Your browser doesn't support HTML5 video. Here is a <a href="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">link to the video</a> instead.</p>
             </video>
@@ -243,21 +247,13 @@
             </div>
             <div class="status-item">
                 <span>Haptic Events:</span>
-                <span class="status-value" id="hapticCount">9 F1 events loaded</span>
+                <span class="status-value" id="hapticCount">0 events loaded</span>
             </div>
         </div>
 
-        <div class="haptic-timeline">
+        <div class="haptic-timeline" id="hapticTimelineContainer">
             <h3>🏎️ F1 Haptic Timeline</h3>
-            <div class="haptic-event">0:02 - Engine startup (Rumble pulse)</div>
-            <div class="haptic-event">0:08 - Gear shift (Sharp tap)</div>
-            <div class="haptic-event">0:15 - Acceleration (Building buzz)</div>
-            <div class="haptic-event">0:22 - High RPM (Rapid pulses)</div>
-            <div class="haptic-event">0:28 - Hard braking (Strong impact)</div>
-            <div class="haptic-event">0:35 - Cornering (Gentle waves)</div>
-            <div class="haptic-event">0:42 - Overtake moment (Intense burst)</div>
-            <div class="haptic-event">0:48 - Finish line (Victory pulse)</div>
-            <div class="haptic-event">0:55 - Cool down (Fade pattern)</div>
+            <!-- Timeline events will be populated by JavaScript -->
         </div>
     </div>
 
@@ -270,70 +266,63 @@
                 this.intensitySlider = document.getElementById('intensitySlider');
                 this.intensityValue = document.getElementById('intensityValue');
                 this.currentTimeDisplay = document.getElementById('currentTime');
+                this.hapticCountDisplay = document.getElementById('hapticCount');
+                this.timelineContainer = document.getElementById('hapticTimelineContainer');
                 
                 this.hapticEnabled = false;
                 this.intensity = 1.0;
-                this.lastHapticTime = 0;
-                
-                // Define haptic events synchronized with F1 video
+                this.lastHapticTime = -1; // Use -1 to ensure the first event triggers
+                this.backgroundHapticInterval = null; // Manages the looping RPM vibration
+
+                // Define different patterns for background RPM feel
+                this.rpmPatterns = {
+                    low: [10, 120],      // A light, infrequent pulse for low speeds/revs
+                    high: [30, 60],     // A faster, more intense buzz for high speeds/straights
+                    cornering: [40, 80] // A slightly rougher feel for G-force in corners
+                };
+
                 this.hapticEvents = [
-                { time: 0.5, pattern: [80, 80, 100, 70, 150, 60, 300], description: "Launch and hard acceleration down the main straight" },
-    { time: 2.2, pattern: [60], description: "Upshift" },
-    { time: 3.4, pattern: [60], description: "Upshift" },
-    { time: 4.6, pattern: [60], description: "Upshift" },
-    { time: 6.0, pattern: [60], description: "Upshift" },
-    { time: 7.8, pattern: [60], description: "Upshift into top gear" },
-
-    // Variante del Rettifilo (First Chicane)
-    { time: 15.5, pattern: [180, 80, 150, 80, 120, 80, 100], description: "Heavy braking for Turn 1" },
-    { time: 17.8, pattern: [80, 40, 80, 40, 80], description: "Riding the kerb on Turn 1 entry" },
-    { time: 19.0, pattern: [80, 40, 80], description: "Riding the kerb on Turn 2 exit" },
-    { time: 20.0, pattern: [80, 80, 120], description: "Short burst of acceleration" },
-    
-    // Curva Grande
-    { time: 21.0, pattern: [70], description: "Upshift" },
-    { time: 22.5, pattern: [70], description: "Upshift" },
-    { time: 24.0, pattern: [500], description: "Sustained G-force through Curva Grande" },
-    { time: 27.5, pattern: [60], description: "Upshift" },
-    
-    // Variante della Roggia (Second Chicane)
-    { time: 34.2, pattern: [160, 70, 130, 70, 100], description: "Hard braking for the second chicane" },
-    { time: 36.5, pattern: [90, 50, 90], description: "Hitting the entry kerb at Turn 4" },
-    { time: 37.8, pattern: [90, 50, 90], description: "Hitting the exit kerb at Turn 5" },
-    
-    // Lesmo Corners
-    { time: 39.0, pattern: [70, 70, 150], description: "Acceleration towards Lesmo 1" },
-    { time: 41.5, pattern: [100], description: "Light brake and downshift for Lesmo 1 (Turn 6)" },
-    { time: 43.0, pattern: [250], description: "Feeling the car through Lesmo 1" },
-    { time: 45.0, pattern: [80, 60, 150], description: "Short acceleration burst" },
-    { time: 46.5, pattern: [120, 80, 80], description: "Braking for Lesmo 2 (Turn 7)" },
-    { time: 48.0, pattern: [300], description: "Sustained G-force on Lesmo 2 exit" },
-
-    // Back Straight to Ascari
-    { time: 51.0, pattern: [60], description: "Upshift" },
-    { time: 53.0, pattern: [60], description: "Upshift" },
-    { time: 54.5, pattern: [40, 50, 40, 50, 40], description: "High RPM on back straight" },
-    { time: 57.0, pattern: [60], description: "Upshift" },
-    { time: 100.5, pattern: [200, 80, 150, 80, 120, 80, 100, 80, 80], description: "Very heavy braking for Ascari chicane" },
-
-    // Variante Ascari
-    { time: 103.0, pattern: [90, 60, 90], description: "Kerb strike on Ascari entry (Turn 8)" },
-    { time: 104.5, pattern: [200], description: "Mid-corner load at Turn 9" },
-    { time: 106.0, pattern: [90, 60, 90], description: "Kerb strike on Ascari exit (Turn 10)" },
-    
-    // Parabolica
-    { time: 107.5, pattern: [80, 60, 120, 50, 200], description: "Full acceleration towards Parabolica" },
-    { time: 110.0, pattern: [70], description: "Upshift" },
-    { time: 112.5, pattern: [70], description: "Upshift" },
-    { time: 116.0, pattern: [150, 100, 100], description: "Braking and turning in for Parabolica (Turn 11)" },
-    { time: 118.5, pattern: [600], description: "Long, sustained G-force through Parabolica" },
-    
-    // Finish
-    { time: 124.5, pattern: [80, 60, 100, 50, 150, 40, 250], description: "Final acceleration burst over the line" },
-    { time: 126.8, pattern: [60], description: "Final upshift" },
-    { time: 128.0, pattern: [400, 300, 200], description: "Engine and car slowing down after finish" }    
-];
-
+                    { time: 0.5, pattern: [80, 80, 100, 70, 150, 60, 300], description: "Launch and hard acceleration" },
+                    { time: 2.2, pattern: [60], description: "Upshift" },
+                    { time: 3.4, pattern: [60], description: "Upshift" },
+                    { time: 4.6, pattern: [60], description: "Upshift" },
+                    { time: 6.0, pattern: [60], description: "Upshift" },
+                    { time: 7.8, pattern: [60], description: "Upshift into top gear" },
+                    { time: 15.5, pattern: [180, 80, 150, 80, 120, 80, 100], description: "Heavy braking for Turn 1" },
+                    { time: 17.8, pattern: [80, 40, 80, 40, 80], description: "Riding the kerb on Turn 1 entry" },
+                    { time: 19.0, pattern: [80, 40, 80], description: "Riding the kerb on Turn 2 exit" },
+                    { time: 20.0, pattern: [80, 80, 120], description: "Short burst of acceleration" },
+                    { time: 21.0, pattern: [70], description: "Upshift" },
+                    { time: 22.5, pattern: [70], description: "Upshift" },
+                    { time: 24.0, pattern: [500], description: "Sustained G-force through Curva Grande" },
+                    { time: 27.5, pattern: [60], description: "Upshift" },
+                    { time: 34.2, pattern: [160, 70, 130, 70, 100], description: "Hard braking for second chicane" },
+                    { time: 36.5, pattern: [90, 50, 90], description: "Hitting the entry kerb at Turn 4" },
+                    { time: 37.8, pattern: [90, 50, 90], description: "Hitting the exit kerb at Turn 5" },
+                    { time: 39.0, pattern: [70, 70, 150], description: "Acceleration towards Lesmo 1" },
+                    { time: 41.5, pattern: [100], description: "Light brake and downshift for Lesmo 1" },
+                    { time: 43.0, pattern: [250], description: "Feeling the car through Lesmo 1" },
+                    { time: 45.0, pattern: [80, 60, 150], description: "Short acceleration burst" },
+                    { time: 46.5, pattern: [120, 80, 80], description: "Braking for Lesmo 2" },
+                    { time: 48.0, pattern: [300], description: "Sustained G-force on Lesmo 2 exit" },
+                    { time: 51.0, pattern: [60], description: "Upshift" },
+                    { time: 53.0, pattern: [60], description: "Upshift" },
+                    { time: 54.5, pattern: [40, 50, 40, 50, 40], description: "High RPM on back straight" },
+                    { time: 57.0, pattern: [60], description: "Upshift" },
+                    { time: 100.5, pattern: [200, 80, 150, 80, 120, 80, 100, 80, 80], description: "Heavy braking for Ascari chicane" },
+                    { time: 103.0, pattern: [90, 60, 90], description: "Kerb strike on Ascari entry" },
+                    { time: 104.5, pattern: [200], description: "Mid-corner load at Ascari" },
+                    { time: 106.0, pattern: [90, 60, 90], description: "Kerb strike on Ascari exit" },
+                    { time: 107.5, pattern: [80, 60, 120, 50, 200], description: "Full acceleration towards Parabolica" },
+                    { time: 110.0, pattern: [70], description: "Upshift" },
+                    { time: 112.5, pattern: [70], description: "Upshift" },
+                    { time: 116.0, pattern: [150, 100, 100], description: "Braking and turning in for Parabolica" },
+                    { time: 118.5, pattern: [600], description: "Long, sustained G-force through Parabolica" },
+                    { time: 124.5, pattern: [80, 60, 100, 50, 150, 40, 250], description: "Final acceleration over the line" },
+                    { time: 126.8, pattern: [60], description: "Final upshift" },
+                    { time: 128.0, pattern: [400, 300, 200], description: "Engine and car slowing down" }
+                ];
+                
                 this.init();
             }
             
@@ -341,11 +330,56 @@
                 this.checkVibrationSupport();
                 this.setupEventListeners();
                 this.updateIntensityDisplay();
+                this.populateTimeline();
+            }
+
+            populateTimeline() {
+                // Clear existing timeline children except the title
+                while (this.timelineContainer.children.length > 1) {
+                    this.timelineContainer.removeChild(this.timelineContainer.lastChild);
+                }
+
+                this.hapticEvents.forEach(event => {
+                    const eventDiv = document.createElement('div');
+                    eventDiv.className = 'haptic-event';
+                    const minutes = Math.floor(event.time / 60);
+                    const seconds = (event.time % 60).toFixed(1);
+                    eventDiv.textContent = `${minutes}:${seconds.padStart(4, '0')} - ${event.description}`;
+                    this.timelineContainer.appendChild(eventDiv);
+                });
+                this.hapticCountDisplay.textContent = `${this.hapticEvents.length} F1 events loaded`;
+            }
+
+            startBackgroundHaptics(pattern) {
+                if (this.backgroundHapticInterval) {
+                    clearInterval(this.backgroundHapticInterval);
+                }
+
+                const loopVibration = () => {
+                    if (this.video.paused) {
+                        this.stopBackgroundHaptics();
+                        return;
+                    }
+                    const scaledPattern = pattern.map(d => Math.round(d * this.intensity));
+                    this.vibrate(scaledPattern);
+                };
+                
+                const intervalDuration = pattern.reduce((a, b) => a + b, 0);
+                if (intervalDuration > 0) {
+                   this.backgroundHapticInterval = setInterval(loopVibration, intervalDuration);
+                }
+            }
+
+            stopBackgroundHaptics() {
+                clearInterval(this.backgroundHapticInterval);
+                this.backgroundHapticInterval = null;
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(0);
+                }
             }
             
             checkVibrationSupport() {
                 const vibrationSupport = document.getElementById('vibrationSupport');
-                
                 if ('vibrate' in navigator) {
                     vibrationSupport.textContent = '✅ Supported';
                     vibrationSupport.style.color = '#4ecdc4';
@@ -356,25 +390,21 @@
             }
             
             setupEventListeners() {
-                // Play button
                 this.playBtn.addEventListener('click', () => {
                     if (this.video.paused) {
                         this.hapticEnabled = true;
                         this.video.play();
                         this.playBtn.textContent = '⏸️ Pause';
+                        this.startBackgroundHaptics(this.rpmPatterns.low);
                     } else {
                         this.video.pause();
-                        this.hapticEnabled = false;
-                        this.playBtn.textContent = '▶️ Play with Haptics';
                     }
                 });
                 
-                // Test vibration
                 this.testBtn.addEventListener('click', () => {
                     this.vibrate([200, 100, 200, 100, 400]);
                 });
                 
-                // Video events
                 this.video.addEventListener('timeupdate', () => {
                     this.updateTime();
                     if (this.hapticEnabled) {
@@ -385,14 +415,15 @@
                 this.video.addEventListener('ended', () => {
                     this.hapticEnabled = false;
                     this.playBtn.textContent = '▶️ Play with Haptics';
+                    this.stopBackgroundHaptics();
                 });
                 
                 this.video.addEventListener('pause', () => {
                     this.hapticEnabled = false;
                     this.playBtn.textContent = '▶️ Play with Haptics';
+                    this.stopBackgroundHaptics();
                 });
                 
-                // Intensity slider
                 this.intensitySlider.addEventListener('input', (e) => {
                     this.intensity = parseInt(e.target.value) / 100;
                     this.updateIntensityDisplay();
@@ -415,11 +446,7 @@
                 const currentTime = this.video.currentTime;
                 
                 this.hapticEvents.forEach(event => {
-                    // Check if we've reached this event time (with 0.5 second tolerance)
-                    if (currentTime >= event.time && 
-                        currentTime <= event.time + 0.5 && 
-                        this.lastHapticTime < event.time) {
-                        
+                    if (currentTime >= event.time && this.lastHapticTime < event.time) {
                         this.triggerHaptic(event);
                         this.lastHapticTime = event.time;
                     }
@@ -429,15 +456,28 @@
             triggerHaptic(event) {
                 console.log(`Triggering haptic: ${event.description} at ${event.time}s`);
                 
-                // Apply intensity scaling to the pattern
+                this.stopBackgroundHaptics();
+
                 const scaledPattern = event.pattern.map(duration => 
                     Math.round(duration * this.intensity)
                 );
                 
                 this.vibrate(scaledPattern);
-                
-                // Visual feedback
                 this.showHapticFeedback(event.description);
+                
+                const patternDuration = scaledPattern.reduce((a, b) => a + b, 0);
+
+                setTimeout(() => {
+                    if (this.video.paused) return; // Don't restart if video has been paused
+
+                    let nextPattern = this.rpmPatterns.low; // Default
+                    if (event.description.toLowerCase().includes("acceleration") || event.description.toLowerCase().includes("straight")) {
+                        nextPattern = this.rpmPatterns.high;
+                    } else if (event.description.toLowerCase().includes("corner") || event.description.toLowerCase().includes("g-force")) {
+                        nextPattern = this.rpmPatterns.cornering;
+                    }
+                    this.startBackgroundHaptics(nextPattern);
+                }, patternDuration);
             }
             
             vibrate(pattern) {
@@ -447,7 +487,6 @@
             }
             
             showHapticFeedback(description) {
-                // Create a temporary visual indicator
                 const feedback = document.createElement('div');
                 feedback.style.cssText = `
                     position: fixed;
@@ -461,48 +500,34 @@
                     font-weight: 600;
                     z-index: 1000;
                     animation: slideIn 0.3s ease;
+                    text-align: center;
                 `;
-                feedback.textContent = `🔄 ${description}`;
+                feedback.textContent = `⚡ ${description}`;
                 
-                // Add animation keyframes
                 if (!document.querySelector('#haptic-animation-styles')) {
                     const style = document.createElement('style');
                     style.id = 'haptic-animation-styles';
                     style.textContent = `
-                        @keyframes slideIn {
-                            from { transform: translateX(100%); opacity: 0; }
-                            to { transform: translateX(0); opacity: 1; }
-                        }
-                        @keyframes slideOut {
-                            from { transform: translateX(0); opacity: 1; }
-                            to { transform: translateX(100%); opacity: 0; }
-                        }
+                        @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+                        @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
                     `;
                     document.head.appendChild(style);
                 }
                 
                 document.body.appendChild(feedback);
                 
-                // Remove after 2 seconds
                 setTimeout(() => {
-                    feedback.style.animation = 'slideOut 0.3s ease';
-                    setTimeout(() => {
-                        if (feedback.parentNode) {
-                            feedback.parentNode.removeChild(feedback);
-                        }
-                    }, 300);
+                    feedback.style.animation = 'slideOut 0.3s ease forwards';
+                    feedback.addEventListener('animationend', () => feedback.remove());
                 }, 2000);
             }
         }
         
-        // Initialize the player when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             new HapticVideoPlayer();
         });
         
-        // Add some interactive elements
         document.addEventListener('click', (e) => {
-            // Add subtle haptic feedback to button clicks on mobile
             if (e.target.classList.contains('btn') && 'vibrate' in navigator) {
                 navigator.vibrate(50);
             }
