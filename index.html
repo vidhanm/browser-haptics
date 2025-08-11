@@ -277,17 +277,44 @@
                 
                 // Define haptic events synchronized with F1 video
                 this.hapticEvents = [
-                    { time: 2.0, pattern: [150, 100, 150], description: "Engine startup" },
-                    { time: 8.5, pattern: [200], description: "Gear shift" },
-                    { time: 15.0, pattern: [100, 50, 100, 50, 200], description: "Acceleration" },
-                    { time: 22.3, pattern: [50, 50, 50, 50, 50], description: "High RPM" },
-                    { time: 28.7, pattern: [300], description: "Hard braking" },
-                    { time: 35.2, pattern: [80, 40, 80, 40, 80], description: "Cornering" },
-                    { time: 42.0, pattern: [400, 200, 400], description: "Overtake moment" },
-                    { time: 48.5, pattern: [500], description: "Finish line" },
-                    { time: 55.0, pattern: [200, 150, 100], description: "Cool down" }
-                ];
-                
+                { time: 1.0, pattern: [150, 80, 250, 80, 400], description: "Engine revs build for launch" },
+    { time: 2.5, pattern: [80, 100, 80], description: "1st to 2nd gear shift" },
+    { time: 4.0, pattern: [70], description: "2nd to 3rd gear shift" },
+    { time: 5.5, pattern: [70], description: "3rd to 4th gear shift" },
+    { time: 8.0, pattern: [300, 50, 100], description: "Entering and holding a long sweeping corner" },
+    { time: 11.5, pattern: [60], description: "Upshift while exiting the corner" },
+    
+    // Mid-Lap Section 1
+    { time: 15.5, pattern: [150, 120, 150], description: "Hard braking and multiple downshifts for a sharp turn" },
+    { time: 18.0, pattern: [80, 60, 120, 50, 200], description: "Aggressive acceleration out of the turn" },
+    { time: 19.8, pattern: [60], description: "Quick upshift on a short straight" },
+    { time: 21.5, pattern: [60], description: "Another quick upshift" },
+    { time: 23.0, pattern: [40, 50, 40, 50, 40], description: "Engine at high RPM redline on the straight" },
+    { time: 26.0, pattern: [120, 100, 80], description: "Lighter braking and downshift for a chicane" },
+    { time: 28.5, pattern: [180], description: "Feeling the chassis load up on corner exit" },
+
+    // Mid-Lap Section 2
+    { time: 35.0, pattern: [150, 120, 150, 120, 150], description: "Very hard braking for a hairpin" },
+    { time: 38.0, pattern: [100, 80, 120, 80, 150, 50, 250], description: "Building power out of the slow hairpin" },
+    { time: 42.0, pattern: [70], description: "Upshift" },
+    { time: 44.0, pattern: [70], description: "Upshift" },
+    { time: 46.0, pattern: [450], description: "Sustained G-force through a fast, sweeping corner" },
+    { time: 50.0, pattern: [50, 80, 50], description: "Short-shifting to maintain stability" },
+
+    // Approaching the Finish
+    { time: 54.0, pattern: [60, 60, 60, 60, 400], description: "Sustained full throttle acceleration on the main straight" },
+    { time: 58.0, pattern: [60], description: "Final upshift into top gear" },
+    { time: 62.0, pattern: [1200], description: "Peak speed, maximum vibration and engine scream" },
+    { time: 110.0, pattern: [150, 100, 120], description: "Braking hard after the main straight" },
+    { time: 114.0, pattern: [250], description: "Navigating the final turn" },
+    { time: 118.0, pattern: [80, 80, 150, 50, 300], description: "Final acceleration push" },
+
+    // Cool Down
+    { time: 124.0, pattern: [400, 300, 200, 500, 100], description: "Crossing the line, coasting and engine slowing" },
+    { time: 128.0, pattern: [80, 400, 80], description: "Final downshift as the car comes to a stop" }
+
+];
+
                 this.init();
             }
             
