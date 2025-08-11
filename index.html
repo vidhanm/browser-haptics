@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haptic Video Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 700;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .video-container {
+            position: relative;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(238, 90, 82, 0.3);
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(238, 90, 82, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            box-shadow: 0 4px 15px rgba(68, 160, 141, 0.3);
+        }
+
+        .btn.secondary:hover {
+            box-shadow: 0 6px 20px rgba(68, 160, 141, 0.4);
+        }
+
+        .status {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .status-item {
+            color: white;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-value {
+            font-weight: 600;
+            color: #4ecdc4;
+        }
+
+        .haptic-timeline {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .haptic-timeline h3 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .haptic-event {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 5px;
+            color: white;
+            font-size: 0.9em;
+        }
+
+        .intensity-control {
+            margin: 20px 0;
+        }
+
+        .intensity-control label {
+            color: white;
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4ecdc4;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4ecdc4;
+            cursor: pointer;
+            border: none;
+        }
+
+        .warning {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid rgba(255, 193, 7, 0.5);
+            color: #fff3cd;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .btn {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Haptic Video Player</h1>
+        
+        <div class="warning">
+            📱 For best experience, use this on a mobile device with vibration support. Desktop browsers have limited haptic feedback capabilities.
+        </div>
+
+        <div class="video-container">
+            <video id="hapticVideo" controls preload="metadata">
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                <p>Your browser doesn't support HTML5 video. Here is a <a href="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">link to the video</a> instead.</p>
+            </video>
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="playBtn">▶️ Play with Haptics</button>
+            <button class="btn secondary" id="testBtn">🔄 Test Vibration</button>
+        </div>
+
+        <div class="intensity-control">
+            <label for="intensitySlider">Haptic Intensity: <span id="intensityValue">100%</span></label>
+            <input type="range" id="intensitySlider" class="slider" min="0" max="100" value="100">
+        </div>
+
+        <div class="status">
+            <div class="status-item">
+                <span>Vibration Support:</span>
+                <span class="status-value" id="vibrationSupport">Checking...</span>
+            </div>
+            <div class="status-item">
+                <span>Current Time:</span>
+                <span class="status-value" id="currentTime">0:00</span>
+            </div>
+            <div class="status-item">
+                <span>Haptic Events:</span>
+                <span class="status-value" id="hapticCount">8 loaded</span>
+            </div>
+        </div>
+
+        <div class="haptic-timeline">
+            <h3>🎯 Haptic Timeline</h3>
+            <div class="haptic-event">0:05 - Intro music beat (Medium pulse)</div>
+            <div class="haptic-event">0:12 - Character appears (Quick tap)</div>
+            <div class="haptic-event">0:18 - Action sequence (Rapid pulses)</div>
+            <div class="haptic-event">0:25 - Impact sound (Strong buzz)</div>
+            <div class="haptic-event">0:32 - Movement (Gentle wave)</div>
+            <div class="haptic-event">0:40 - Climax moment (Intense vibration)</div>
+            <div class="haptic-event">0:48 - Resolution (Fade pattern)</div>
+            <div class="haptic-event">0:55 - End credits (Soft pulse)</div>
+        </div>
+    </div>
+
+    <script>
+        class HapticVideoPlayer {
+            constructor() {
+                this.video = document.getElementById('hapticVideo');
+                this.playBtn = document.getElementById('playBtn');
+                this.testBtn = document.getElementById('testBtn');
+                this.intensitySlider = document.getElementById('intensitySlider');
+                this.intensityValue = document.getElementById('intensityValue');
+                this.currentTimeDisplay = document.getElementById('currentTime');
+                
+                this.hapticEnabled = false;
+                this.intensity = 1.0;
+                this.lastHapticTime = 0;
+                
+                // Define haptic events synchronized with video
+                this.hapticEvents = [
+                    { time: 5.0, pattern: [200, 100, 200], description: "Intro beat" },
+                    { time: 12.0, pattern: [100], description: "Character appears" },
+                    { time: 18.0, pattern: [50, 50, 50, 50, 50], description: "Action sequence" },
+                    { time: 25.0, pattern: [400], description: "Impact" },
+                    { time: 32.0, pattern: [100, 50, 150, 50, 100], description: "Movement" },
+                    { time: 40.0, pattern: [300, 100, 300, 100, 500], description: "Climax" },
+                    { time: 48.0, pattern: [200, 150, 100, 50], description: "Resolution" },
+                    { time: 55.0, pattern: [150], description: "End credits" }
+                ];
+                
+                this.init();
+            }
+            
+            init() {
+                this.checkVibrationSupport();
+                this.setupEventListeners();
+                this.updateIntensityDisplay();
+            }
+            
+            checkVibrationSupport() {
+                const vibrationSupport = document.getElementById('vibrationSupport');
+                
+                if ('vibrate' in navigator) {
+                    vibrationSupport.textContent = '✅ Supported';
+                    vibrationSupport.style.color = '#4ecdc4';
+                } else {
+                    vibrationSupport.textContent = '❌ Not Supported';
+                    vibrationSupport.style.color = '#ff6b6b';
+                }
+            }
+            
+            setupEventListeners() {
+                // Play button
+                this.playBtn.addEventListener('click', () => {
+                    if (this.video.paused) {
+                        this.hapticEnabled = true;
+                        this.video.play();
+                        this.playBtn.textContent = '⏸️ Pause';
+                    } else {
+                        this.video.pause();
+                        this.hapticEnabled = false;
+                        this.playBtn.textContent = '▶️ Play with Haptics';
+                    }
+                });
+                
+                // Test vibration
+                this.testBtn.addEventListener('click', () => {
+                    this.vibrate([200, 100, 200, 100, 400]);
+                });
+                
+                // Video events
+                this.video.addEventListener('timeupdate', () => {
+                    this.updateTime();
+                    if (this.hapticEnabled) {
+                        this.checkHapticEvents();
+                    }
+                });
+                
+                this.video.addEventListener('ended', () => {
+                    this.hapticEnabled = false;
+                    this.playBtn.textContent = '▶️ Play with Haptics';
+                });
+                
+                this.video.addEventListener('pause', () => {
+                    this.hapticEnabled = false;
+                    this.playBtn.textContent = '▶️ Play with Haptics';
+                });
+                
+                // Intensity slider
+                this.intensitySlider.addEventListener('input', (e) => {
+                    this.intensity = parseInt(e.target.value) / 100;
+                    this.updateIntensityDisplay();
+                });
+            }
+            
+            updateIntensityDisplay() {
+                const percentage = Math.round(this.intensity * 100);
+                this.intensityValue.textContent = `${percentage}%`;
+            }
+            
+            updateTime() {
+                const currentTime = this.video.currentTime;
+                const minutes = Math.floor(currentTime / 60);
+                const seconds = Math.floor(currentTime % 60);
+                this.currentTimeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            checkHapticEvents() {
+                const currentTime = this.video.currentTime;
+                
+                this.hapticEvents.forEach(event => {
+                    // Check if we've reached this event time (with 0.5 second tolerance)
+                    if (currentTime >= event.time && 
+                        currentTime <= event.time + 0.5 && 
+                        this.lastHapticTime < event.time) {
+                        
+                        this.triggerHaptic(event);
+                        this.lastHapticTime = event.time;
+                    }
+                });
+            }
+            
+            triggerHaptic(event) {
+                console.log(`Triggering haptic: ${event.description} at ${event.time}s`);
+                
+                // Apply intensity scaling to the pattern
+                const scaledPattern = event.pattern.map(duration => 
+                    Math.round(duration * this.intensity)
+                );
+                
+                this.vibrate(scaledPattern);
+                
+                // Visual feedback
+                this.showHapticFeedback(event.description);
+            }
+            
+            vibrate(pattern) {
+                if ('vibrate' in navigator && this.intensity > 0) {
+                    navigator.vibrate(pattern);
+                }
+            }
+            
+            showHapticFeedback(description) {
+                // Create a temporary visual indicator
+                const feedback = document.createElement('div');
+                feedback.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(78, 205, 196, 0.9);
+                    color: white;
+                    padding: 10px 15px;
+                    border-radius: 25px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                `;
+                feedback.textContent = `🔄 ${description}`;
+                
+                // Add animation keyframes
+                if (!document.querySelector('#haptic-animation-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'haptic-animation-styles';
+                    style.textContent = `
+                        @keyframes slideIn {
+                            from { transform: translateX(100%); opacity: 0; }
+                            to { transform: translateX(0); opacity: 1; }
+                        }
+                        @keyframes slideOut {
+                            from { transform: translateX(0); opacity: 1; }
+                            to { transform: translateX(100%); opacity: 0; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                document.body.appendChild(feedback);
+                
+                // Remove after 2 seconds
+                setTimeout(() => {
+                    feedback.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => {
+                        if (feedback.parentNode) {
+                            feedback.parentNode.removeChild(feedback);
+                        }
+                    }, 300);
+                }, 2000);
+            }
+        }
+        
+        // Initialize the player when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new HapticVideoPlayer();
+        });
+        
+        // Add some interactive elements
+        document.addEventListener('click', (e) => {
+            // Add subtle haptic feedback to button clicks on mobile
+            if (e.target.classList.contains('btn') && 'vibrate' in navigator) {
+                navigator.vibrate(50);
+            }
+        });
+    </script>
+</body>
+</html>
