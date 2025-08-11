@@ -216,6 +216,8 @@
 
         <div class="video-container">
             <video id="hapticVideo" controls preload="metadata">
+                <source src="./f1-video.mp4" type="video/mp4">
+                <!-- Fallback to a sample video if F1 video not available -->
                 <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
                 <p>Your browser doesn't support HTML5 video. Here is a <a href="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">link to the video</a> instead.</p>
             </video>
@@ -242,20 +244,21 @@
             </div>
             <div class="status-item">
                 <span>Haptic Events:</span>
-                <span class="status-value" id="hapticCount">8 loaded</span>
+                <span class="status-value" id="hapticCount">9 F1 events loaded</span>
             </div>
         </div>
 
         <div class="haptic-timeline">
-            <h3>🎯 Haptic Timeline</h3>
-            <div class="haptic-event">0:05 - Intro music beat (Medium pulse)</div>
-            <div class="haptic-event">0:12 - Character appears (Quick tap)</div>
-            <div class="haptic-event">0:18 - Action sequence (Rapid pulses)</div>
-            <div class="haptic-event">0:25 - Impact sound (Strong buzz)</div>
-            <div class="haptic-event">0:32 - Movement (Gentle wave)</div>
-            <div class="haptic-event">0:40 - Climax moment (Intense vibration)</div>
-            <div class="haptic-event">0:48 - Resolution (Fade pattern)</div>
-            <div class="haptic-event">0:55 - End credits (Soft pulse)</div>
+            <h3>🏎️ F1 Haptic Timeline</h3>
+            <div class="haptic-event">0:02 - Engine startup (Rumble pulse)</div>
+            <div class="haptic-event">0:08 - Gear shift (Sharp tap)</div>
+            <div class="haptic-event">0:15 - Acceleration (Building buzz)</div>
+            <div class="haptic-event">0:22 - High RPM (Rapid pulses)</div>
+            <div class="haptic-event">0:28 - Hard braking (Strong impact)</div>
+            <div class="haptic-event">0:35 - Cornering (Gentle waves)</div>
+            <div class="haptic-event">0:42 - Overtake moment (Intense burst)</div>
+            <div class="haptic-event">0:48 - Finish line (Victory pulse)</div>
+            <div class="haptic-event">0:55 - Cool down (Fade pattern)</div>
         </div>
     </div>
 
@@ -273,16 +276,17 @@
                 this.intensity = 1.0;
                 this.lastHapticTime = 0;
                 
-                // Define haptic events synchronized with video
+                // Define haptic events synchronized with F1 video
                 this.hapticEvents = [
-                    { time: 5.0, pattern: [200, 100, 200], description: "Intro beat" },
-                    { time: 12.0, pattern: [100], description: "Character appears" },
-                    { time: 18.0, pattern: [50, 50, 50, 50, 50], description: "Action sequence" },
-                    { time: 25.0, pattern: [400], description: "Impact" },
-                    { time: 32.0, pattern: [100, 50, 150, 50, 100], description: "Movement" },
-                    { time: 40.0, pattern: [300, 100, 300, 100, 500], description: "Climax" },
-                    { time: 48.0, pattern: [200, 150, 100, 50], description: "Resolution" },
-                    { time: 55.0, pattern: [150], description: "End credits" }
+                    { time: 2.0, pattern: [150, 100, 150], description: "Engine startup" },
+                    { time: 8.5, pattern: [200], description: "Gear shift" },
+                    { time: 15.0, pattern: [100, 50, 100, 50, 200], description: "Acceleration" },
+                    { time: 22.3, pattern: [50, 50, 50, 50, 50], description: "High RPM" },
+                    { time: 28.7, pattern: [300], description: "Hard braking" },
+                    { time: 35.2, pattern: [80, 40, 80, 40, 80], description: "Cornering" },
+                    { time: 42.0, pattern: [400, 200, 400], description: "Overtake moment" },
+                    { time: 48.5, pattern: [500], description: "Finish line" },
+                    { time: 55.0, pattern: [200, 150, 100], description: "Cool down" }
                 ];
                 
                 this.init();
