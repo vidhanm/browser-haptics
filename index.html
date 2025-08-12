@@ -216,6 +216,7 @@
         
         <div class="warning">
             📱 For best experience, use this on a mobile device with vibration support. Desktop browsers have limited haptic feedback capabilities.
+            <br><strong>Note:</strong> iPhones do not support standard web vibration APIs, but iOS 18+ provides some haptic feedback through UI interactions.
         </div>
 
         <div class="video-container">
@@ -229,6 +230,16 @@
         <div class="controls">
             <button class="btn" id="playBtn">▶️ Play</button>
             <button class="btn secondary" id="testBtn">🔄 Test Vibration</button>
+        </div>
+
+        <!-- Hidden iOS haptic feedback elements -->
+        <div style="position: absolute; left: -9999px; opacity: 0; pointer-events: none;">
+            <input type="checkbox" id="iosHaptic1" switch>
+            <label for="iosHaptic1">iOS Haptic 1</label>
+            <input type="checkbox" id="iosHaptic2" switch>
+            <label for="iosHaptic2">iOS Haptic 2</label>
+            <input type="checkbox" id="iosHaptic3" switch>
+            <label for="iosHaptic3">iOS Haptic 3</label>
         </div>
 
         <div class="intensity-control">
@@ -273,6 +284,24 @@
                 this.intensity = 1.0;
                 this.lastHapticTime = -1; // Use -1 to ensure the first event triggers
                 this.backgroundHapticInterval = null; // Manages the looping RPM vibration
+
+                // iOS haptic support
+                this.iosHapticElements = [
+                    document.getElementById('iosHaptic1'),
+                    document.getElementById('iosHaptic2'),
+                    document.getElementById('iosHaptic3')
+                ];
+                this.iosHapticLabels = [
+                    document.querySelector('label[for="iosHaptic1"]'),
+                    document.querySelector('label[for="iosHaptic2"]'),
+                    document.querySelector('label[for="iosHaptic3"]')
+                ];
+                this.currentHapticIndex = 0;
+
+                // Device detection
+                this.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                this.isIOSWebView = this.isIOS && window.navigator.standalone !== undefined;
+                this.supportsVibrate = 'vibrate' in navigator && !this.isIOS;
 
                 // Define different patterns for background RPM feel
                 this.rpmPatterns = {
@@ -373,14 +402,29 @@
             stopBackgroundHaptics() {
                 clearInterval(this.backgroundHapticInterval);
                 this.backgroundHapticInterval = null;
-                if ('vibrate' in navigator) {
+                
+                // Stop standard vibration for non-iOS devices
+                if (!this.isIOS && 'vibrate' in navigator) {
                     navigator.vibrate(0);
                 }
             }
             
             checkVibrationSupport() {
                 const vibrationSupport = document.getElementById('vibrationSupport');
-                if ('vibrate' in navigator) {
+                if (this.isIOS) {
+                    // Check if we can detect iOS 18+ switch support
+                    const testSwitch = document.createElement('input');
+                    testSwitch.type = 'checkbox';
+                    testSwitch.setAttribute('switch', '');
+                    
+                    if (testSwitch.hasAttribute('switch')) {
+                        vibrationSupport.textContent = '🍎 iOS Haptic (Limited)';
+                        vibrationSupport.style.color = '#ffb347'; // Orange for limited support
+                    } else {
+                        vibrationSupport.textContent = '❌ Not Supported (iOS)';
+                        vibrationSupport.style.color = '#ff6b6b';
+                    }
+                } else if (this.supportsVibrate) {
                     vibrationSupport.textContent = '✅ Supported';
                     vibrationSupport.style.color = '#4ecdc4';
                 } else {
@@ -420,7 +464,18 @@
                 });
                 
                 this.testBtn.addEventListener('click', () => {
-                    this.vibrate([200, 100, 200, 100, 400]);
+                    // Test different patterns based on device capabilities
+                    if (this.isIOS) {
+                        // For iOS, trigger multiple haptics with visual feedback
+                        this.triggerIOSHaptic();
+                        setTimeout(() => this.triggerIOSHaptic(), 100);
+                        setTimeout(() => this.triggerIOSHaptic(), 250);
+                        this.showHapticFeedback('Testing iOS haptic feedback');
+                    } else {
+                        // Standard vibration pattern for other devices
+                        this.vibrate([200, 100, 200, 100, 400]);
+                        this.showHapticFeedback('Testing vibration');
+                    }
                 });
                 
                 this.video.addEventListener('timeupdate', () => {
@@ -498,10 +553,59 @@
                 }, patternDuration);
             }
             
+            triggerIOSHaptic() {
+                if (this.isIOS && this.iosHapticLabels[this.currentHapticIndex]) {
+                    // Programmatically click the label to trigger iOS haptic feedback
+                    this.iosHapticLabels[this.currentHapticIndex].click();
+                    
+                    // Cycle through haptic elements to create variation
+                    this.currentHapticIndex = (this.currentHapticIndex + 1) % this.iosHapticLabels.length;
+                    return true;
+                }
+                return false;
+            }
+            
             vibrate(pattern) {
-                if ('vibrate' in navigator && this.intensity > 0) {
+                if (this.intensity <= 0) return;
+                
+                let hapticTriggered = false;
+                
+                // Try iOS haptic feedback first
+                if (this.isIOS) {
+                    hapticTriggered = this.triggerIOSHaptic();
+                    
+                    // For iOS, also provide visual feedback since haptic may be limited
+                    this.showVisualFeedback();
+                }
+                
+                // Fallback to standard vibration API for non-iOS devices
+                if (!hapticTriggered && this.supportsVibrate) {
                     navigator.vibrate(pattern);
                 }
+                
+                // If no haptic feedback is available, show enhanced visual feedback
+                if (!hapticTriggered && !this.supportsVibrate) {
+                    this.showVisualFeedback(true);
+                }
+            }
+            
+            showVisualFeedback(enhanced = false) {
+                // Flash the video container to provide visual feedback
+                const container = document.querySelector('.video-container');
+                const originalStyle = container.style.cssText;
+                
+                if (enhanced) {
+                    // More prominent visual feedback for devices without any haptic support
+                    container.style.boxShadow = '0 0 30px rgba(78, 205, 196, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.2)';
+                    container.style.transform = 'scale(1.02)';
+                } else {
+                    // Subtle visual feedback for iOS devices
+                    container.style.boxShadow = '0 0 20px rgba(78, 205, 196, 0.6)';
+                }
+                
+                setTimeout(() => {
+                    container.style.cssText = originalStyle;
+                }, enhanced ? 200 : 100);
             }
             
             showHapticFeedback(description) {
