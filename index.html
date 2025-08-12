@@ -219,7 +219,7 @@
         </div>
 
         <div class="video-container">
-            <video id="hapticVideo" controls preload="metadata">
+            <video id="hapticVideo" controls preload="metadata" playsinline>
                 <source src="./f1-video.mp4" type="video/mp4">
                 <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
                 <p>Your browser doesn't support HTML5 video. Here is a <a href="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">link to the video</a> instead.</p>
@@ -393,9 +393,27 @@
                 this.playBtn.addEventListener('click', () => {
                     if (this.video.paused) {
                         this.hapticEnabled = true;  // Always enable haptics when playing
-                        this.video.play();
-                        this.playBtn.textContent = '⏸️ Pause';
-                        this.startBackgroundHaptics(this.rpmPatterns.low);
+                        
+                        // Handle the Promise returned by play() for mobile compatibility
+                        const playPromise = this.video.play();
+                        
+                        if (playPromise !== undefined) {
+                            playPromise.then(() => {
+                                // Playback started successfully
+                                this.playBtn.textContent = '⏸️ Pause';
+                                this.startBackgroundHaptics(this.rpmPatterns.low);
+                            }).catch((error) => {
+                                // Playback failed - reset state
+                                console.log('Video playback failed:', error);
+                                this.hapticEnabled = false;
+                                this.playBtn.textContent = '▶️ Play';
+                                // Could show an error message to user here
+                            });
+                        } else {
+                            // Fallback for browsers that don't support Promise-based play()
+                            this.playBtn.textContent = '⏸️ Pause';
+                            this.startBackgroundHaptics(this.rpmPatterns.low);
+                        }
                     } else {
                         this.video.pause();
                     }
