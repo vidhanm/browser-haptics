@@ -227,7 +227,7 @@
         </div>
 
         <div class="controls">
-            <button class="btn" id="playBtn">▶️ Play with Haptics</button>
+            <button class="btn" id="playBtn">▶️ Play</button>
             <button class="btn secondary" id="testBtn">🔄 Test Vibration</button>
         </div>
 
@@ -392,7 +392,7 @@
             setupEventListeners() {
                 this.playBtn.addEventListener('click', () => {
                     if (this.video.paused) {
-                        this.hapticEnabled = true;
+                        this.hapticEnabled = true;  // Always enable haptics when playing
                         this.video.play();
                         this.playBtn.textContent = '⏸️ Pause';
                         this.startBackgroundHaptics(this.rpmPatterns.low);
@@ -414,13 +414,13 @@
                 
                 this.video.addEventListener('ended', () => {
                     this.hapticEnabled = false;
-                    this.playBtn.textContent = '▶️ Play with Haptics';
+                    this.playBtn.textContent = '▶️ Play';
                     this.stopBackgroundHaptics();
                 });
                 
                 this.video.addEventListener('pause', () => {
                     this.hapticEnabled = false;
-                    this.playBtn.textContent = '▶️ Play with Haptics';
+                    this.playBtn.textContent = '▶️ Play';
                     this.stopBackgroundHaptics();
                 });
                 
