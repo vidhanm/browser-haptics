@@ -219,6 +219,20 @@
             <br><strong>Note:</strong> iPhones do not support standard web vibration APIs, but iOS 18+ provides some haptic feedback through UI interactions.
         </div>
 
+        <div class="upload-section" style="background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed rgba(255, 255, 255, 0.3);">
+            <h3 style="color: white; margin-bottom: 15px; font-size: 1.3em;">📤 Upload Your Video</h3>
+            <input type="file" id="videoUpload" accept="video/*" style="display: none;">
+            <label for="videoUpload" class="btn" style="display: inline-block; cursor: pointer; margin-bottom: 10px;">Choose Video File</label>
+            <button class="btn secondary" id="analyzeBtn" style="display: none; margin-left: 10px;">🎵 Generate Vibrations</button>
+            <div id="uploadStatus" style="color: white; margin-top: 10px; font-size: 0.9em;"></div>
+            <div id="analysisProgress" style="display: none; margin-top: 15px;">
+                <div style="background: rgba(0,0,0,0.3); border-radius: 10px; overflow: hidden; height: 8px;">
+                    <div id="progressBar" style="background: linear-gradient(45deg, #4ecdc4, #44a08d); height: 100%; width: 0%; transition: width 0.3s;"></div>
+                </div>
+                <p style="color: white; margin-top: 8px; font-size: 0.85em;" id="progressText">Analyzing audio...</p>
+            </div>
+        </div>
+
         <div class="video-container">
             <video id="hapticVideo" controls preload="metadata" playsinline>
                 <source src="./f1-video.mp4" type="video/mp4">
@@ -279,11 +293,24 @@
                 this.currentTimeDisplay = document.getElementById('currentTime');
                 this.hapticCountDisplay = document.getElementById('hapticCount');
                 this.timelineContainer = document.getElementById('hapticTimelineContainer');
-                
+
+                // Upload elements
+                this.videoUpload = document.getElementById('videoUpload');
+                this.analyzeBtn = document.getElementById('analyzeBtn');
+                this.uploadStatus = document.getElementById('uploadStatus');
+                this.analysisProgress = document.getElementById('analysisProgress');
+                this.progressBar = document.getElementById('progressBar');
+                this.progressText = document.getElementById('progressText');
+
                 this.hapticEnabled = false;
                 this.intensity = 1.0;
                 this.lastHapticTime = -1; // Use -1 to ensure the first event triggers
                 this.backgroundHapticInterval = null; // Manages the looping RPM vibration
+
+                // Audio analysis
+                this.audioContext = null;
+                this.uploadedVideoURL = null;
+                this.isCustomVideo = false;
 
                 // iOS haptic support
                 this.iosHapticElements = [
@@ -501,6 +528,15 @@
                     this.intensity = parseInt(e.target.value) / 100;
                     this.updateIntensityDisplay();
                 });
+
+                // Video upload listeners
+                this.videoUpload.addEventListener('change', (e) => {
+                    this.handleVideoUpload(e);
+                });
+
+                this.analyzeBtn.addEventListener('click', () => {
+                    this.analyzeVideoAudio();
+                });
             }
             
             updateIntensityDisplay() {
@@ -625,7 +661,7 @@
                     text-align: center;
                 `;
                 feedback.textContent = `⚡ ${description}`;
-                
+
                 if (!document.querySelector('#haptic-animation-styles')) {
                     const style = document.createElement('style');
                     style.id = 'haptic-animation-styles';
@@ -635,13 +671,197 @@
                     `;
                     document.head.appendChild(style);
                 }
-                
+
                 document.body.appendChild(feedback);
-                
+
                 setTimeout(() => {
                     feedback.style.animation = 'slideOut 0.3s ease forwards';
                     feedback.addEventListener('animationend', () => feedback.remove());
                 }, 2000);
+            }
+
+            handleVideoUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                // Validate file type
+                if (!file.type.startsWith('video/')) {
+                    this.uploadStatus.textContent = '❌ Please select a valid video file';
+                    this.uploadStatus.style.color = '#ff6b6b';
+                    return;
+                }
+
+                // Clean up previous upload
+                if (this.uploadedVideoURL) {
+                    URL.revokeObjectURL(this.uploadedVideoURL);
+                }
+
+                // Create object URL for the video
+                this.uploadedVideoURL = URL.createObjectURL(file);
+
+                // Update video source
+                this.video.src = this.uploadedVideoURL;
+                this.video.load();
+
+                // Update UI
+                this.uploadStatus.textContent = `✅ Loaded: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                this.uploadStatus.style.color = '#4ecdc4';
+                this.analyzeBtn.style.display = 'inline-block';
+                this.isCustomVideo = true;
+
+                // Reset haptic events for custom video
+                this.hapticEvents = [];
+                this.lastHapticTime = -1;
+                this.populateTimeline();
+            }
+
+            async analyzeVideoAudio() {
+                if (!this.uploadedVideoURL) return;
+
+                try {
+                    // Show progress UI
+                    this.analysisProgress.style.display = 'block';
+                    this.progressBar.style.width = '10%';
+                    this.progressText.textContent = 'Loading audio data...';
+                    this.analyzeBtn.disabled = true;
+
+                    // Create audio context if not exists
+                    if (!this.audioContext) {
+                        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+
+                    // Fetch the video file and extract audio
+                    const response = await fetch(this.uploadedVideoURL);
+                    const arrayBuffer = await response.arrayBuffer();
+
+                    this.progressBar.style.width = '30%';
+                    this.progressText.textContent = 'Decoding audio...';
+
+                    // Decode audio data
+                    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+
+                    this.progressBar.style.width = '50%';
+                    this.progressText.textContent = 'Analyzing audio patterns...';
+
+                    // Analyze the audio buffer
+                    const audioData = this.analyzeAudioBuffer(audioBuffer);
+
+                    this.progressBar.style.width = '80%';
+                    this.progressText.textContent = 'Generating haptic events...';
+
+                    // Generate haptic events from the analysis
+                    this.generateHapticEvents(audioData, audioBuffer.duration);
+
+                } catch (error) {
+                    console.error('Error analyzing audio:', error);
+                    this.uploadStatus.textContent = `❌ Error analyzing audio: ${error.message}`;
+                    this.uploadStatus.style.color = '#ff6b6b';
+                    this.analysisProgress.style.display = 'none';
+                    this.analyzeBtn.disabled = false;
+                }
+            }
+
+            analyzeAudioBuffer(audioBuffer) {
+                const audioData = [];
+                const sampleRate = audioBuffer.sampleRate;
+                const channelData = audioBuffer.getChannelData(0); // Use first channel
+                const sampleInterval = 0.1; // Analyze every 100ms
+                const samplesPerInterval = Math.floor(sampleRate * sampleInterval);
+
+                for (let i = 0; i < channelData.length; i += samplesPerInterval) {
+                    const slice = channelData.slice(i, i + samplesPerInterval);
+
+                    // Calculate RMS (Root Mean Square) for volume
+                    let sumSquares = 0;
+                    for (let j = 0; j < slice.length; j++) {
+                        sumSquares += slice[j] * slice[j];
+                    }
+                    const rms = Math.sqrt(sumSquares / slice.length);
+                    const volume = rms * 255; // Scale to 0-255
+
+                    // Simple bass detection: look at low-frequency energy
+                    // For more accurate bass, we'd need FFT, but this approximation works
+                    let bassEnergy = 0;
+                    const bassWindowSize = Math.floor(slice.length / 20);
+                    for (let j = 0; j < Math.min(bassWindowSize, slice.length); j++) {
+                        bassEnergy += Math.abs(slice[j]);
+                    }
+                    const bass = (bassEnergy / bassWindowSize) * 255;
+
+                    audioData.push({
+                        time: i / sampleRate,
+                        volume: volume,
+                        bass: bass
+                    });
+                }
+
+                return audioData;
+            }
+
+            generateHapticEvents(audioData, duration) {
+                this.hapticEvents = [];
+
+                // Threshold for detecting significant audio events
+                const volumeThreshold = 50;
+                const bassThreshold = 80;
+
+                // Analyze audio data and create haptic events
+                for (let i = 0; i < audioData.length; i++) {
+                    const data = audioData[i];
+
+                    // Detect volume spikes (like beats, impacts)
+                    if (data.volume > volumeThreshold || data.bass > bassThreshold) {
+                        // Check if this is a new event (not too close to previous)
+                        const lastEvent = this.hapticEvents[this.hapticEvents.length - 1];
+                        if (!lastEvent || (data.time - lastEvent.time) > 0.3) {
+
+                            // Create haptic pattern based on intensity
+                            let pattern, description;
+
+                            if (data.bass > 120) {
+                                pattern = [150, 50, 200];
+                                description = "Heavy bass";
+                            } else if (data.bass > bassThreshold) {
+                                pattern = [80, 40, 100];
+                                description = "Bass hit";
+                            } else if (data.volume > 150) {
+                                pattern = [200, 100, 150];
+                                description = "Loud peak";
+                            } else if (data.volume > 100) {
+                                pattern = [100, 50, 80];
+                                description = "Audio peak";
+                            } else {
+                                pattern = [60];
+                                description = "Audio event";
+                            }
+
+                            this.hapticEvents.push({
+                                time: data.time,
+                                pattern: pattern,
+                                description: description
+                            });
+                        }
+                    }
+                }
+
+                // Update UI
+                this.progressBar.style.width = '100%';
+                this.progressText.textContent = `✅ Generated ${this.hapticEvents.length} haptic events!`;
+                this.progressText.style.color = '#4ecdc4';
+
+                setTimeout(() => {
+                    this.analysisProgress.style.display = 'none';
+                    this.analyzeBtn.disabled = false;
+                }, 2000);
+
+                // Update timeline
+                this.populateTimeline();
+
+                // Update timeline title
+                const timelineTitle = this.timelineContainer.querySelector('h3');
+                if (timelineTitle) {
+                    timelineTitle.textContent = '🎵 Generated Haptic Timeline';
+                }
             }
         }
         
